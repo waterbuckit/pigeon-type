@@ -1,6 +1,7 @@
 import create from "zustand";
 import words from "./words.json";
 import Rand from "rand-seed";
+import { getLengthOfFirstRow, isNextLastRow } from "./words";
 
 export enum GameTime {
   THIRTY_SECONDS = 30,
@@ -18,6 +19,7 @@ export type GameState = {
   activeWordLetterIndex: number;
   typedWords: string[];
   words: string[];
+  finished: boolean;
   hasFocus: boolean;
   start: () => void;
   setFocus: (value: boolean) => void;
@@ -31,17 +33,33 @@ export type GameState = {
 
 const getSeed = () => Date.now().toString();
 const getRandClient = (seed: string) => new Rand(seed);
-const getWords = (randClient: Rand): string[] =>
+const getWords = (randClient: Rand, count: number): string[] =>
   Array.from(
-    { length: 100 },
+    { length: count },
     () => words[Math.floor(randClient.next() * words.length)] ?? "unknown"
   );
 
 const getTypedWords = (words: string[]) => words.map(() => "");
 
+const sliceNWords = (get: () => GameState, numberOfWords: number) => {
+  const fillerWords = getWords(get().randClient, numberOfWords);
+  const newWords = [...get().words.slice(numberOfWords), ...fillerWords];
+  const newTypedWords = [
+    ...get().typedWords.slice(numberOfWords),
+    ...getTypedWords(fillerWords),
+  ];
+
+  return {
+    words: newWords,
+    activeWordIndex: get().activeWordIndex - numberOfWords + 1,
+    activeWordLetterIndex: 0,
+    typedWords: newTypedWords,
+  };
+};
+
 const initialSeed = getSeed();
 const initialRandClient = getRandClient(initialSeed);
-const initialWords = getWords(initialRandClient);
+const initialWords = getWords(initialRandClient, 100);
 const initialTypedWords = getTypedWords(initialWords);
 
 export const useGameState = create<GameState>()((set, get) => {
@@ -50,15 +68,16 @@ export const useGameState = create<GameState>()((set, get) => {
   const pauseTimer = () => {
     clearInterval(timer);
   };
+
   const startTimer = () => {
     timer = setInterval(
       () =>
         set((state) => {
           if (state.timeLeft === 0) {
             pauseTimer();
-            return { ...state };
+            return { finished: true };
           }
-          return { ...state, timeLeft: state.timeLeft - 1 };
+          return { timeLeft: state.timeLeft - 1 };
         }),
       1000
     );
@@ -67,6 +86,7 @@ export const useGameState = create<GameState>()((set, get) => {
   return {
     paused: false,
     started: false,
+    finished: false,
     hasFocus: true,
     seed: initialSeed,
     timeLeft: GameTime.THIRTY_SECONDS,
@@ -76,13 +96,13 @@ export const useGameState = create<GameState>()((set, get) => {
     randClient: initialRandClient,
     activeWordIndex: 0,
     activeWordLetterIndex: 0,
+
     enterKey: (key: string) => {
       const activeWordIndex = get().activeWordIndex;
       const newTypedWords = [...get().typedWords];
       newTypedWords[activeWordIndex] += key;
 
       set((state) => ({
-        ...state,
         typedWords: newTypedWords,
         activeWordLetterIndex: state.activeWordLetterIndex + 1,
       }));
@@ -101,7 +121,6 @@ export const useGameState = create<GameState>()((set, get) => {
         ) ?? "";
 
       set((state) => ({
-        ...state,
         typedWords: newTypedWords,
         activeWordLetterIndex: state.activeWordLetterIndex - 1,
       }));
@@ -113,7 +132,7 @@ export const useGameState = create<GameState>()((set, get) => {
     reset: () => {
       const seed = getSeed();
       const randClient = getRandClient(seed);
-      const words = getWords(randClient);
+      const words = getWords(randClient, 100);
       const typedWords = getTypedWords(words);
 
       pauseTimer();
@@ -129,27 +148,30 @@ export const useGameState = create<GameState>()((set, get) => {
         randClient,
       }));
     },
-    setFocus: (hasFocus) => set((state) => ({ ...state, hasFocus })),
+    setFocus: (hasFocus) => set(() => ({ hasFocus })),
     pause: () => {
       pauseTimer();
       set((state) => ({
-        ...state,
         paused: state.started ? true : state.paused,
       }));
     },
     unpause: () => {
-      set((state) => ({ ...state, paused: false }));
+      set(() => ({ paused: false }));
       startTimer();
     },
     incrementActiveWord: () =>
-      set((state) => ({
-        ...state,
-        activeWordLetterIndex:
-          state.started && !state.paused ? 0 : state.activeWordLetterIndex,
-        activeWordIndex:
-          state.started && !state.paused
-            ? state.activeWordIndex + 1
-            : state.activeWordIndex,
-      })),
+      set((state) => {
+        if (!state.started && state.paused && state.activeWordLetterIndex === 0)
+          return state;
+
+        if (isNextLastRow()) {
+          return sliceNWords(get, getLengthOfFirstRow());
+        }
+
+        return {
+          activeWordLetterIndex: 0,
+          activeWordIndex: state.activeWordIndex + 1,
+        };
+      }),
   };
 });

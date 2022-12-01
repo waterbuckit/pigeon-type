@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import dynamic from "next/dynamic";
-import type { FC} from "react";
+import type { FC } from "react";
 import { useEffect } from "react";
 import Button from "../button";
 import { useGameState } from "./game-state";
@@ -8,7 +8,6 @@ import PauseModal from "./pause-modal";
 import TimeLeft from "./time-left";
 import Words from "./words";
 import shallow from "zustand/shallow";
-import Caret from "./caret";
 
 const TypingTest: FC = () => {
   const {
@@ -45,7 +44,7 @@ const TypingTest: FC = () => {
     }),
     shallow
   );
-
+  
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -98,10 +97,7 @@ const TypingTest: FC = () => {
         )}
       >
         <TimeLeft playing={started && !paused} />
-        <div className="flex max-h-[8.25rem] flex-wrap gap-[0.75rem] overflow-hidden font-mono text-2xl">
-          <Caret />
-          <Words />
-        </div>
+        <Words />
         <div className="flex justify-center">
           <Button
             variant={started && !paused ? "secondary-borderless" : "primary"}

@@ -56,8 +56,7 @@ const Word: FC<WordProps> = ({ originalWord, active, index }) => {
           incorrect
           correct={false}
           active={
-            active &&
-            index + originalLetters.length === activeWordLetterIndex
+            active && index + originalLetters.length === activeWordLetterIndex
           }
           key={index + originalLetters.length + 1}
           originalLetter={letter}
