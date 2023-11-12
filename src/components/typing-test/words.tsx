@@ -30,7 +30,7 @@ const Words: FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { words, activeWordIndex } = useGameState(
-    ({ words, activeWordIndex, start }) => ({
+    ({ words, activeWordIndex }) => ({
       words,
       activeWordIndex,
     }),
@@ -63,7 +63,14 @@ const Words: FC = () => {
           />
         ))}
       </div>
-      <input className="opacity-0 cursor-default" type="text" ref={inputRef} />
+      <input
+        onKeyDown={(e) =>
+          document.dispatchEvent(new KeyboardEvent("keydown", { key: e.key }))
+        }
+        className="cursor-default opacity-0"
+        type="text"
+        ref={inputRef}
+      />
     </>
   );
 };

@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 import type { FC } from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import Button from "../button";
 import { useGameState } from "./game-state";
 import PauseModal from "./pause-modal";
@@ -18,7 +18,6 @@ const TypingTest: FC = () => {
     skipGame,
     start,
     pause,
-    unpause,
     reset,
     incrementActiveWord,
     enterKey,
@@ -52,8 +51,8 @@ const TypingTest: FC = () => {
     shallow
   );
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
       switch (event.key) {
         case "Esc":
         case "Escape":
@@ -73,21 +72,15 @@ const TypingTest: FC = () => {
         }
         enterKey(event.key);
       }
-    };
+    },
+    [clearKey, enterKey, incrementActiveWord, pause, start, started]
+  );
 
+  useEffect(() => {
     addEventListener("keydown", handleKeyPress);
 
     return () => removeEventListener("keydown", handleKeyPress);
-  }, [
-    clearKey,
-    enterKey,
-    incrementActiveWord,
-    pause,
-    paused,
-    start,
-    started,
-    unpause,
-  ]);
+  }, [handleKeyPress]);
 
   return (
     <>
