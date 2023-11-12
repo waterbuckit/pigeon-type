@@ -58,7 +58,7 @@ const Words: FC = () => {
         />
       ))}
     </div>
-    <input className="hidden" type="text" ref={inputRef} />
+    <input className="sr-only" type="text" ref={inputRef} />
     </>
   );
 };
