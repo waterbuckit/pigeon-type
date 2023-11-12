@@ -1,5 +1,5 @@
 import type { FC} from "react";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import shallow from "zustand/shallow";
 import Caret from "./caret";
 import { useGameState } from "./game-state";
@@ -28,6 +28,7 @@ export const isNextLastRow = (): boolean => {
 
 const Words: FC = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { words, activeWordIndex } = useGameState(
     ({ words, activeWordIndex }) => ({
       words,
@@ -36,8 +37,17 @@ const Words: FC = () => {
     shallow
   );
 
+  // trigger keyboard to open on mobile devices
+  const openKeyboard = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.click();
+    }
+  }, [])
+
   return (
-    <div ref={ref} className="words relative flex max-h-[8.25rem] flex-wrap gap-[0.75rem] overflow-hidden font-mono text-2xl">
+    <>
+    <div onClick={openKeyboard} ref={ref} className="words relative flex max-h-[8.25rem] flex-wrap gap-[0.75rem] overflow-hidden font-mono text-2xl">
       <Caret typingTestRef={ref} />
       {words.map((word, index) => (
         <Word
@@ -48,6 +58,8 @@ const Words: FC = () => {
         />
       ))}
     </div>
+    <input className="hidden" type="text" ref={inputRef} />
+    </>
   );
 };
 

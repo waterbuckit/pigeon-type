@@ -8,11 +8,14 @@ import PauseModal from "./pause-modal";
 import TimeLeft from "./time-left";
 import Words from "./words";
 import shallow from "zustand/shallow";
+import GameOver from "./game-over";
 
 const TypingTest: FC = () => {
   const {
     started,
     paused,
+    finished,
+    skipGame,
     start,
     pause,
     unpause,
@@ -24,6 +27,8 @@ const TypingTest: FC = () => {
     ({
       started,
       paused,
+      finished,
+      skipGame,
       start,
       pause,
       unpause,
@@ -33,7 +38,9 @@ const TypingTest: FC = () => {
       clearKey,
     }) => ({
       started,
+      finished,
       paused,
+      skipGame,
       start,
       pause,
       unpause,
@@ -44,7 +51,7 @@ const TypingTest: FC = () => {
     }),
     shallow
   );
-  
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -96,17 +103,35 @@ const TypingTest: FC = () => {
           "z-10 flex flex-col gap-10"
         )}
       >
-        <TimeLeft playing={started && !paused} />
-        <Words />
-        <div className="flex justify-center">
-          <Button
-            variant={started && !paused ? "secondary-borderless" : "primary"}
-            onClick={reset}
-          >
-            Restart
-          </Button>
-        </div>
-        <PauseModal />
+        {!finished && (
+          <>
+            <TimeLeft playing={started && !paused} />
+            <Words />
+            <div className="flex justify-center gap-2">
+              <Button
+                variant={
+                  started && !paused ? "secondary-borderless" : "primary"
+                }
+                onClick={reset}
+              >
+                {!started && "Refresh"}
+                {started && "Restart"}
+              </Button>
+              {started && (
+                <Button
+                  variant={
+                    started && !paused ? "secondary-borderless" : "primary"
+                  }
+                  onClick={skipGame}
+                >
+                  Skip
+                </Button>
+              )}
+            </div>
+            <PauseModal />
+          </>
+        )}
+        {finished && <GameOver />}
       </div>
     </>
   );

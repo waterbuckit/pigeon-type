@@ -5,7 +5,7 @@ const Leaderboard: NextPage = () => {
   return (
     <>
       <Head>
-        <title>pigeontype - Leaderboard</title>
+        <title>pigeontype - Stats</title>
         <meta name="description" content="pigeon typing test" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
