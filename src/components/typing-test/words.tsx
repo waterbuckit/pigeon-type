@@ -30,7 +30,7 @@ const Words: FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { words, activeWordIndex } = useGameState(
-    ({ words, activeWordIndex }) => ({
+    ({ words, activeWordIndex, start }) => ({
       words,
       activeWordIndex,
     }),
@@ -42,23 +42,28 @@ const Words: FC = () => {
     if (inputRef.current) {
       inputRef.current.focus();
       inputRef.current.click();
+      console.log(document.activeElement)
     }
   }, [])
 
   return (
     <>
-    <div onClick={openKeyboard} ref={ref} className="words relative flex max-h-[8.25rem] flex-wrap gap-[0.75rem] overflow-hidden font-mono text-2xl">
-      <Caret typingTestRef={ref} />
-      {words.map((word, index) => (
-        <Word
-          active={index === activeWordIndex}
-          index={index}
-          key={index}
-          originalWord={word}
-        />
-      ))}
-    </div>
-    <input className="sr-only" type="text" ref={inputRef} />
+      <div
+        onClick={openKeyboard}
+        ref={ref}
+        className="words relative flex max-h-[8.25rem] flex-wrap gap-[0.75rem] overflow-hidden font-mono text-2xl"
+      >
+        <Caret typingTestRef={ref} />
+        {words.map((word, index) => (
+          <Word
+            active={index === activeWordIndex}
+            index={index}
+            key={index}
+            originalWord={word}
+          />
+        ))}
+      </div>
+      <input className="opacity-0 cursor-default" type="text" ref={inputRef} />
     </>
   );
 };
